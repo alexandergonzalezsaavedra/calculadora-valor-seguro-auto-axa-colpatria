@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import { setQuoteResult } from '../../store/quoteSlice';
+import { useState } from 'react';
 
 interface AntiguedadOption {
   id: number;
