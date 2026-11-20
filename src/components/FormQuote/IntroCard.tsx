@@ -1,4 +1,4 @@
-import { Car, Check, Info, ShieldCheck } from 'lucide-react';
+import { Car, Check, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 interface Paso {
@@ -22,37 +22,37 @@ const PASOS: Paso[] = [
   },
 ];
 
+/** Guía inicial: se muestra a la izquierda del formulario antes de la primera cotización. */
 const IntroCard = () => (
   <aside
     aria-labelledby='titulo-intro'
-    className='rounded-2xl border border-indigo-100 bg-indigo-50 p-6'
+    className='rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8'
   >
-    <header className='flex items-center gap-3'>
-      <Info
-        className='h-6 w-6 shrink-0 text-indigo-900'
-        aria-hidden='true'
-      />
-      <h2
-        id='titulo-intro'
-        className='text-lg font-bold text-indigo-950'
-      >
-        Cotiza tu seguro en 3 pasos
-      </h2>
-    </header>
+    <h2
+      id='titulo-intro'
+      className='text-2xl font-bold text-indigo-950'
+    >
+      Guía: cotiza en 3 pasos
+    </h2>
+    <p className='mt-2 text-slate-600'>
+      Completa los datos de tu vehículo y presiona{' '}
+      <strong className='text-indigo-950'>Calcular y comparar planes</strong>{' '}
+      para ver la comparación de coberturas.
+    </p>
 
-    <ol className='mt-4 space-y-3'>
+    <ol className='mt-6 space-y-3'>
       {PASOS.map(({ icono: Icono, texto }, index) => (
         <li
           key={texto}
-          className='flex items-start gap-3 text-sm text-slate-700'
+          className='flex items-center gap-4 rounded-xl bg-indigo-50/60 p-4 text-slate-700'
         >
-          <span className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-indigo-700 shadow-sm'>
+          <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#00008f] shadow-sm'>
             <Icono
-              className='h-4 w-4'
+              className='h-5 w-5'
               aria-hidden='true'
             />
           </span>
-          <span className='pt-1.5'>
+          <span>
             <strong className='text-indigo-950'>{index + 1}.</strong> {texto}
           </span>
         </li>

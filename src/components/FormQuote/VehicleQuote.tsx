@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from '../../store/store';
-import { setQuoteResult } from '../../store/quoteSlice';
+import { setQuoteResult, setVehiculoReemplazo } from '../../store/quoteSlice';
 import { useState } from 'react';
-import { Calculator, RefreshCw } from 'lucide-react';
+import { Calculator, ChevronDown, Info, RefreshCw } from 'lucide-react';
 
 interface AntiguedadOption {
   id: number;
@@ -20,38 +20,36 @@ const antiguedadVehiculo: AntiguedadOption[] = [
   { id: 4, antiguedad: 'Más de 10 años', factor: 1.4 },
 ];
 
-const formatCOP = (amount: number): string =>
-  new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    maximumFractionDigits: 0,
-  }).format(amount);
+/** Formatea solo dígitos con separador de miles colombiano: 85000000 → 85.000.000 */
+const formatMiles = (digitos: string): string =>
+  digitos ? new Intl.NumberFormat('es-CO').format(Number(digitos)) : '';
+
+const ICONO_INFO = 'h-4 w-4 text-slate-500';
+const CAMPO =
+  'w-full rounded-lg border border-slate-300 bg-white py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00008f]/40 focus:border-[#00008f]';
 
 const VehicleQuote = () => {
   const dispatch = useAppDispatch();
   const primaBaseGuardada = useAppSelector((state) => state.quote.primaBase);
 
-  const [valorComercialInput, setValorComercialInput] =
-    useState<string>('85000000');
-  const [factorSeleccionado, setFactorSeleccionado] = useState<string>('1.1');
-  const [vehiculoReemplazo, setVehiculoReemplazo] = useState<boolean>(false);
+  const [valorComercialInput, setValorComercialInput] = useState<string>('');
+  const [factorSeleccionado, setFactorSeleccionado] = useState<string>('');
   const [errorValor, setErrorValor] = useState<string>('');
   const [errorAntiguedad, setErrorAntiguedad] = useState<string>('');
 
+  // Vive en el store: se sincroniza con la tarjeta de plan seleccionada
+  const vehiculoReemplazo = useAppSelector(
+    (state) => state.quote.vehiculoReemplazo,
+  );
   const valorGuardado = useAppSelector((state) => state.quote.valorComercial);
   const factorGuardado = useAppSelector(
     (state) => state.quote.factorAntiguedad,
   );
-  const reemplazoGuardado = useAppSelector(
-    (state) => state.quote.vehiculoReemplazo,
-  );
 
-  // Hay cambios si ya existe una cotización y algún campo difiere de lo guardado
   const hayCambios =
     primaBaseGuardada !== null &&
     (Number(valorComercialInput) !== valorGuardado ||
-      Number(factorSeleccionado) !== factorGuardado ||
-      vehiculoReemplazo !== reemplazoGuardado);
+      Number(factorSeleccionado) !== factorGuardado);
 
   const calcularValor = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -111,18 +109,12 @@ const VehicleQuote = () => {
       className='w-full'
     >
       <div className='bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8'>
-        <header className='mb-6'>
-          <h1
-            id='titulo-cotizador'
-            className='text-2xl font-bold text-slate-900'
-          >
-            Cotizador de Seguro de Auto
-          </h1>
-          <p className='mt-2 text-sm text-slate-600'>
-            Calcula la prima base de tu vehículo según su valor comercial y
-            antigüedad en pesos colombianos (COP).
-          </p>
-        </header>
+        <h2
+          id='titulo-cotizador'
+          className='mb-6 text-2xl font-bold text-indigo-950'
+        >
+          1. Cuéntanos sobre tu vehículo
+        </h2>
 
         <form
           onSubmit={calcularValor}
@@ -132,30 +124,45 @@ const VehicleQuote = () => {
           <div>
             <label
               htmlFor='valor-comercial'
-              className='block text-sm font-medium text-slate-800 mb-1.5'
+              className='mb-2 flex items-center gap-1.5 font-medium text-slate-800'
             >
-              Valor comercial
+              Valor comercial del vehículo
+              <span title='Rango permitido: $20.000.000 a $300.000.000 COP.'>
+                <Info
+                  className={ICONO_INFO}
+                  aria-hidden='true'
+                />
+              </span>
             </label>
-            <input
-              id='valor-comercial'
-              name='valorComercial'
-              type='number'
-              min={MIN_VALOR_COMERCIAL}
-              max={MAX_VALOR_COMERCIAL}
-              step={100000}
-              value={valorComercialInput}
-              onChange={(e) => {
-                setValorComercialInput(e.target.value);
-                if (errorValor) setErrorValor('');
-              }}
-              aria-invalid={Boolean(errorValor)}
-              aria-describedby={errorValor ? 'error-valor' : 'ayuda-valor'}
-              placeholder='Ej. 85000000'
-              className='w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600'
-            />
+            <div className='relative'>
+              <span
+                aria-hidden='true'
+                className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-900'
+              >
+                $
+              </span>
+              <input
+                id='valor-comercial'
+                name='valorComercial'
+                type='text'
+                inputMode='numeric'
+                autoComplete='off'
+                value={formatMiles(valorComercialInput)}
+                onChange={(e) => {
+                  setValorComercialInput(
+                    e.target.value.replace(/\D/g, '').slice(0, 12),
+                  );
+                  if (errorValor) setErrorValor('');
+                }}
+                aria-invalid={Boolean(errorValor)}
+                aria-describedby={errorValor ? 'error-valor' : 'ayuda-valor'}
+                placeholder='85.000.000'
+                className={`${CAMPO} pl-8 pr-4`}
+              />
+            </div>
             <p
               id='ayuda-valor'
-              className='mt-1 text-xs text-slate-500'
+              className='sr-only'
             >
               Rango permitido: $20.000.000 a $300.000.000 COP.
             </p>
@@ -173,34 +180,46 @@ const VehicleQuote = () => {
           <div>
             <label
               htmlFor='antiguedad-vehiculo'
-              className='block text-sm font-medium text-slate-800 mb-1.5'
+              className='mb-2 flex items-center gap-1.5 font-medium text-slate-800'
             >
               Antigüedad del vehículo
+              <span title='A mayor antigüedad, mayor es el factor aplicado a la prima.'>
+                <Info
+                  className={ICONO_INFO}
+                  aria-hidden='true'
+                />
+              </span>
             </label>
-            <select
-              id='antiguedad-vehiculo'
-              name='antiguedadVehiculo'
-              value={factorSeleccionado}
-              onChange={(e) => {
-                setFactorSeleccionado(e.target.value);
-                if (errorAntiguedad) setErrorAntiguedad('');
-              }}
-              aria-invalid={Boolean(errorAntiguedad)}
-              aria-describedby={
-                errorAntiguedad ? 'error-antiguedad' : undefined
-              }
-              className='w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600'
-            >
-              <option value=''>Selecciona una opción</option>
-              {antiguedadVehiculo.map((item) => (
-                <option
-                  key={item.id}
-                  value={item.factor}
-                >
-                  {item.antiguedad}
-                </option>
-              ))}
-            </select>
+            <div className='relative'>
+              <select
+                id='antiguedad-vehiculo'
+                name='antiguedadVehiculo'
+                value={factorSeleccionado}
+                onChange={(e) => {
+                  setFactorSeleccionado(e.target.value);
+                  if (errorAntiguedad) setErrorAntiguedad('');
+                }}
+                aria-invalid={Boolean(errorAntiguedad)}
+                aria-describedby={
+                  errorAntiguedad ? 'error-antiguedad' : undefined
+                }
+                className={`${CAMPO} cursor-pointer appearance-none pl-4 pr-11`}
+              >
+                <option value=''>Selecciona una opción</option>
+                {antiguedadVehiculo.map((item) => (
+                  <option
+                    key={item.id}
+                    value={item.factor}
+                  >
+                    {item.antiguedad}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                aria-hidden='true'
+                className='pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-700'
+              />
+            </div>
             {errorAntiguedad && (
               <p
                 id='error-antiguedad'
@@ -218,20 +237,20 @@ const VehicleQuote = () => {
               name='vehiculoReemplazo'
               type='checkbox'
               checked={vehiculoReemplazo}
-              onChange={(e) => setVehiculoReemplazo(e.target.checked)}
-              className='h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-2 focus:ring-red-600'
+              onChange={(e) => dispatch(setVehiculoReemplazo(e.target.checked))}
+              className='h-5 w-5 shrink-0 cursor-pointer rounded accent-[#1a3cc8]'
             />
             <label
               htmlFor='vehiculo-reemplazo'
-              className='text-sm font-medium text-slate-800 select-none cursor-pointer'
+              className='text-slate-800 select-none cursor-pointer'
             >
-              Necesito vehículo de reemplazo
+              Necesito vehículo de reemplazo en caso de siniestro
             </label>
           </div>
 
           <button
             type='submit'
-            className='inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold px-6 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 cursor-pointer'
+            className='mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-lg bg-[#0a1f9c] hover:bg-[#00008f] active:bg-[#000070] text-lg text-white font-semibold px-6 py-3.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00008f] cursor-pointer'
           >
             {hayCambios ? (
               <RefreshCw
@@ -244,7 +263,7 @@ const VehicleQuote = () => {
                 aria-hidden='true'
               />
             )}
-            {hayCambios ? 'Calcular nuevamente' : 'Calcular'}
+            {hayCambios ? 'Calcular nuevamente' : 'Calcular y comparar planes'}
           </button>
           {hayCambios && (
             <p
@@ -256,20 +275,6 @@ const VehicleQuote = () => {
             </p>
           )}
         </form>
-
-        {primaBaseGuardada !== null && (
-          <div
-            aria-live='polite'
-            className='mt-6 rounded-xl bg-slate-50 border border-slate-200 p-4'
-          >
-            <span className='block text-xs uppercase tracking-wide text-slate-500 font-semibold'>
-              Prima base calculada (guardada en store)
-            </span>
-            <strong className='mt-1 block text-2xl font-bold text-slate-900'>
-              {formatCOP(primaBaseGuardada)}
-            </strong>
-          </div>
-        )}
       </div>
     </section>
   );

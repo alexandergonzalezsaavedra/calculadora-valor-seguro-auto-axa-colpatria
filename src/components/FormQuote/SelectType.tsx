@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Check, Info, ShieldCheck, ShieldPlus, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { useAppSelector } from '../../store/store';
+import { useAppDispatch, useAppSelector } from '../../store/store';
+import { setVehiculoReemplazo } from '../../store/quoteSlice';
 
 type PlanId = 'esencial' | 'plus';
 
@@ -62,8 +62,7 @@ const SelectType = () => {
   const vehiculoReemplazo = useAppSelector(
     (state) => state.quote.vehiculoReemplazo,
   );
-  // null = el usuario aún no ha elegido; se preselecciona el recomendado
-  const [planElegido, setPlanElegido] = useState<PlanId | null>(null);
+  const dispatch = useAppDispatch();
 
   if (primaBaseGuardada === null) {
     return null;
@@ -74,12 +73,14 @@ const SelectType = () => {
     plus: calcularPrimaPlan(primaBaseGuardada, PLANES[1].multiplicador),
   };
   const diferencia = primas.plus - primas.esencial;
-  const recomendado: PlanId = vehiculoReemplazo ? 'plus' : 'esencial';
-  const seleccionado: PlanId = planElegido ?? recomendado;
+  // El Plan Plus siempre es el recomendado
+  const recomendado: PlanId = 'plus';
+  // Sincronizado con el checkbox: con vehículo de reemplazo → Plus; sin él → Esencial
+  const seleccionado: PlanId = vehiculoReemplazo ? 'plus' : 'esencial';
   const planSeleccionado = PLANES.find((plan) => plan.id === seleccionado)!;
   const motivo = vehiculoReemplazo
     ? 'Te recomendamos el Plan Plus porque indicaste que necesitas vehículo de reemplazo.'
-    : 'Te recomendamos el Plan Esencial por tener el menor precio.';
+    : 'Te recomendamos el Plan Plus por su mayor cobertura. Si buscas el menor precio, el Plan Esencial es tu opción.';
 
   return (
     <section
@@ -118,7 +119,10 @@ const SelectType = () => {
                 name='plan'
                 value={plan.id}
                 checked={estaSeleccionado}
-                onChange={() => setPlanElegido(plan.id)}
+                // Elegir Plus marca "vehículo de reemplazo"; elegir Esencial lo desmarca
+                onChange={() =>
+                  dispatch(setVehiculoReemplazo(plan.id === 'plus'))
+                }
                 className='sr-only'
               />
 

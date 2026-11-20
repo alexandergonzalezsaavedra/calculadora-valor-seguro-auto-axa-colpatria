@@ -31,6 +31,10 @@ const quoteSlice = createSlice({
       state.factorAntiguedad = action.payload.factorAntiguedad;
       state.vehiculoReemplazo = action.payload.vehiculoReemplazo;
     },
+    // Se sincroniza en vivo entre el checkbox del formulario y la selección de plan
+    setVehiculoReemplazo: (state, action: PayloadAction<boolean>) => {
+      state.vehiculoReemplazo = action.payload;
+    },
     clearQuoteResult: (state) => {
       state.primaBase = null;
       state.valorComercial = null;
@@ -40,5 +44,6 @@ const quoteSlice = createSlice({
   },
 });
 
-export const { setQuoteResult, clearQuoteResult } = quoteSlice.actions;
+export const { setQuoteResult, setVehiculoReemplazo, clearQuoteResult } =
+  quoteSlice.actions;
 export default quoteSlice.reducer;
