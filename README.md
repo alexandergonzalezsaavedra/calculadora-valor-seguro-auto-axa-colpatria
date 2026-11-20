@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# Cotizador de Seguro de Autos — Prueba técnica AXA Colpatria
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Aplicación web para calcular la prima estimada de un seguro de autos y comparar los planes **Esencial** y **Plus**.
 
-## Available Scripts
+## 🌐 Demo en línea
 
-In the project directory, you can run:
+**👉 [https://alexander-gonzalez-axa-colpatria.netlify.app/](https://alexander-gonzalez-axa-colpatria.netlify.app/)**
 
-### `npm start`
+El sitio está desplegado en Netlify y es **totalmente funcional**: se puede diligenciar el formulario, calcular la prima y comparar y seleccionar planes directamente desde el navegador.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Funcionalidades
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Formulario de cotización** con validación:
+  - Valor comercial del vehículo entre **$20.000.000** y **$300.000.000** COP (con formato de miles).
+  - Antigüedad del vehículo: 0 a 2 años, 3 a 5 años, 6 a 10 años o más de 10 años.
+  - Opción «Necesito vehículo de reemplazo en caso de siniestro».
+- **Cálculo de la prima base**: `valor comercial × 3 % × factor de antigüedad`, redondeada al peso.
 
-### `npm test`
+  | Antigüedad     | Factor |
+  | -------------- | ------ |
+  | 0 a 2 años     | 1,00   |
+  | 3 a 5 años     | 1,10   |
+  | 6 a 10 años    | 1,25   |
+  | Más de 10 años | 1,40   |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Comparación de planes** con precio anual de cada plan y diferencia anual (cada prima redondeada al peso):
 
-### `npm run build`
+  | Característica              | Esencial | Plus |
+  | --------------------------- | -------- | ---- |
+  | Multiplicador de prima base | 1,00     | 1,35 |
+  | Asistencia en carretera     | Sí       | Sí   |
+  | Vehículo de reemplazo       | No       | Sí   |
+  | Asistencia jurídica         | No       | Sí   |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  _Ejemplo:_ prima base $2.805.000 → Esencial **$2.805.000**, Plus **$3.786.750**, diferencia **$981.750**.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Tarjetas de plan seleccionables**, sincronizadas con la opción «vehículo de reemplazo»: elegir Plus la marca y elegir Esencial la desmarca (y viceversa).
+- **Guía inicial** con los pasos a seguir antes de la primera cotización y transiciones de entrada al mostrar los planes.
+- Aviso y botón **«Calcular nuevamente»** cuando se modifican el valor o la antigüedad después de calcular.
+- Persistencia del estado de la cotización en `localStorage`.
+- Diseño **responsive** y accesible (etiquetas, roles ARIA, navegación por teclado, `prefers-reduced-motion`).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Tecnologías utilizadas
 
-### `npm run eject`
+| Tecnología                                                   | Uso                                              |
+| ------------------------------------------------------------ | ------------------------------------------------ |
+| [React 19](https://react.dev/)                               | Librería de interfaz de usuario                  |
+| [TypeScript 5](https://www.typescriptlang.org/)              | Tipado estático                                  |
+| [Create React App](https://create-react-app.dev/) (`react-scripts`) | Configuración, servidor de desarrollo y build |
+| [Redux Toolkit](https://redux-toolkit.js.org/) + [React Redux](https://react-redux.js.org/) | Estado global de la cotización |
+| [Tailwind CSS 4](https://tailwindcss.com/)                   | Estilos utilitarios                              |
+| [Lucide React](https://lucide.dev/)                          | Iconografía                                      |
+| [Testing Library](https://testing-library.com/) + Jest       | Pruebas                                          |
+| [Netlify](https://www.netlify.com/)                          | Despliegue                                       |
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Estructura del proyecto
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+src/
+├── App.tsx                     # Layout principal
+├── index.css                   # Estilos globales y animaciones de entrada
+├── components/
+│   ├── Navbar/Navbar.tsx       # Encabezado con logo
+│   ├── Hero/                   # Título e imagen del hero
+│   ├── FormQuote/
+│   │   ├── IntroCard.tsx       # Guía de pasos inicial
+│   │   ├── VehicleQuote.tsx    # Formulario y cálculo de la prima base
+│   │   └── SelectType.tsx      # Comparación y selección de planes
+│   └── Features/Features.tsx   # Franja de beneficios
+└── store/
+    ├── store.ts                # Configuración de Redux y hooks tipados
+    └── quoteSlice.ts           # Estado de la cotización
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Ejecución local
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Requisitos: [Node.js](https://nodejs.org/) 18 o superior.
 
-## Learn More
+```bash
+npm install      # Instalar dependencias
+npm start        # Servidor de desarrollo en http://localhost:3000
+npm run build    # Build de producción en la carpeta build/
+npm test         # Ejecutar pruebas
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Uso de IA
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+El detalle de cómo se utilizó IA durante el desarrollo está en [uso_ia.md](uso_ia.md).
