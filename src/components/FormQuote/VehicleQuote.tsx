@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import { setQuoteResult } from '../../store/quoteSlice';
 import { useState } from 'react';
+import { Calculator, RefreshCw } from 'lucide-react';
 
 interface AntiguedadOption {
   id: number;
@@ -36,6 +37,21 @@ const VehicleQuote = () => {
   const [vehiculoReemplazo, setVehiculoReemplazo] = useState<boolean>(false);
   const [errorValor, setErrorValor] = useState<string>('');
   const [errorAntiguedad, setErrorAntiguedad] = useState<string>('');
+
+  const valorGuardado = useAppSelector((state) => state.quote.valorComercial);
+  const factorGuardado = useAppSelector(
+    (state) => state.quote.factorAntiguedad,
+  );
+  const reemplazoGuardado = useAppSelector(
+    (state) => state.quote.vehiculoReemplazo,
+  );
+
+  // Hay cambios si ya existe una cotización y algún campo difiere de lo guardado
+  const hayCambios =
+    primaBaseGuardada !== null &&
+    (Number(valorComercialInput) !== valorGuardado ||
+      Number(factorSeleccionado) !== factorGuardado ||
+      vehiculoReemplazo !== reemplazoGuardado);
 
   const calcularValor = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -92,7 +108,7 @@ const VehicleQuote = () => {
   return (
     <section
       aria-labelledby='titulo-cotizador'
-      className='w-full max-w-xl mx-auto px-4 py-8'
+      className='w-full'
     >
       <div className='bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8'>
         <header className='mb-6'>
@@ -215,10 +231,30 @@ const VehicleQuote = () => {
 
           <button
             type='submit'
-            className='w-full sm:w-auto rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold px-6 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 cursor-pointer'
+            className='inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold px-6 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 cursor-pointer'
           >
-            Calcular
+            {hayCambios ? (
+              <RefreshCw
+                className='h-5 w-5'
+                aria-hidden='true'
+              />
+            ) : (
+              <Calculator
+                className='h-5 w-5'
+                aria-hidden='true'
+              />
+            )}
+            {hayCambios ? 'Calcular nuevamente' : 'Calcular'}
           </button>
+          {hayCambios && (
+            <p
+              role='status'
+              className='text-sm text-amber-700'
+            >
+              Modificaste los datos. Vuelve a calcular para actualizar los
+              planes.
+            </p>
+          )}
         </form>
 
         {primaBaseGuardada !== null && (
